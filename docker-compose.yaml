@@ -2,16 +2,18 @@ version: '3.8'
 
 services:
   mysql-server:
-    image: mysql:5.7
+    image: mysql:8.0.28
     restart: always
     container_name: mysql-server
     networks:
-     - zabbixnet
+     - net
     command:
      - mysqld
      - --character-set-server=utf8
      - --collation-server=utf8_bin
      - --default-authentication-plugin=mysql_native_password
+    cap_add:
+      - SYS_NICE
     volumes:
      - /home/zabbix/mysql:/var/lib/mysql:rw
     env_file:
@@ -20,9 +22,15 @@ services:
      - MYSQL_USER
      - MYSQL_PASSWORD
      - MYSQL_ROOT_PASSWORD
-  
+ 
+  zabbix-java-gateway:
+    image: zabbix/zabbix-java-gateway:latest
+    networks:
+     - net
+
   zabbix-server:
     image: zabbix/zabbix-server-mysql:latest
+    hostname: zabbix-server
     ports:
      - "10051:10051"
     volumes:
@@ -36,8 +44,10 @@ services:
      - MYSQL_ROOT_PASSWORD
     depends_on:
      - mysql-server
+     - zabbix-java-gateway
+     - zabbix-agent
     networks:
-     - zabbixnet
+     - net
 
   zabbix-web-nginx-mysql:
     image: zabbix/zabbix-web-nginx-mysql:latest
@@ -55,10 +65,24 @@ services:
      - mysql-server
      - zabbix-server
     networks:
-     - zabbixnet
+     - net
+  
+  zabbix-agent:
+    image: zabbix/zabbix-agent:latest
+    hostname: NEOS_ZABBIX_SERVER
+    environment:
+      - ZBX_SERVER_HOST=zabbix-server
+    ports:
+     - "10050:10050"
+    volumes:
+     - /proc:/proc
+     - /sys:/sys
+     - /dev:/dev
+    networks:
+     - net
 
 networks:
-  zabbixnet:
+  net:
     driver: bridge
     
 secrets:
@@ -67,7 +91,6 @@ secrets:
   MYSQL_PASSWORD:
     file: ./config/MYSQL_PASSWORD
   MYSQL_ROOT_PASSWORD:
-    file: ./config/MYSQL_ROOT_PASSWORD
-    
+    file: ./config/MYSQL_ROOT_PASSWORD  
 
 
