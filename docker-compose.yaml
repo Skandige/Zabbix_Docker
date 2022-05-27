@@ -6,7 +6,8 @@ services:
     restart: always
     container_name: mysql-server
     networks:
-     - net
+      net:
+        ipv4_address: 12.10.10.5
     command:
      - mysqld
      - --character-set-server=utf8
@@ -26,7 +27,8 @@ services:
   zabbix-java-gateway:
     image: zabbix/zabbix-java-gateway:latest
     networks:
-     - net
+      net:
+        ipv4_address: 12.10.10.4
 
   zabbix-server:
     image: zabbix/zabbix-server-mysql:latest
@@ -47,7 +49,8 @@ services:
      - zabbix-java-gateway
      - zabbix-agent
     networks:
-     - net
+      net:
+        ipv4_address: 12.10.10.3
 
   zabbix-web-nginx-mysql:
     image: zabbix/zabbix-web-nginx-mysql:latest
@@ -65,25 +68,17 @@ services:
      - mysql-server
      - zabbix-server
     networks:
-     - net
-  
-  zabbix-agent:
-    image: zabbix/zabbix-agent:latest
-    hostname: NEOS_ZABBIX_SERVER
-    environment:
-      - ZBX_SERVER_HOST=zabbix-server
-    ports:
-     - "10050:10050"
-    volumes:
-     - /proc:/proc
-     - /sys:/sys
-     - /dev:/dev
-    networks:
-     - net
+      net:
+        ipv4_address: 12.10.10.2
 
 networks:
   net:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 12.10.10.0/24
+        gateway: 12.10.10.1
     
 secrets:
   MYSQL_USER:
