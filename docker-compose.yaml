@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mysql-server:
-    image: mysql:8.0.28
+    image: mysql:8.0.29
     restart: always
     container_name: mysql-server
     networks:
@@ -13,6 +13,7 @@ services:
      - --character-set-server=utf8
      - --collation-server=utf8_bin
      - --default-authentication-plugin=mysql_native_password
+     - --log_bin_trust_function_creators=1
     cap_add:
       - SYS_NICE
     volumes:
