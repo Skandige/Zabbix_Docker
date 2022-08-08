@@ -1,68 +1,52 @@
 version: '3.8'
 
 services:
-  mysql-server:
-    image: mysql:8.0.29
+  pgsql-server:
+    image: postgres:13-alpine
     restart: always
-    container_name: mysql-server
     networks:
       net:
         ipv4_address: 12.10.10.5
-    command:
-     - mysqld
-    cap_add:
-      - SYS_NICE
-    volumes:
-     - /home/zabbix/mysql:/var/lib/mysql:rw
     env_file:
-     - ./config/db_mysql
+     - ./config/db_pgsql
     secrets:
-     - MYSQL_USER
-     - MYSQL_PASSWORD
-     - MYSQL_ROOT_PASSWORD
+     - POSTGRES_USER
+     - POSTGRES_PASSWORD
  
-  zabbix-java-gateway:
-    image: zabbix/zabbix-java-gateway:latest
-    networks:
-      net:
-        ipv4_address: 12.10.10.4
-
   zabbix-server:
-    image: zabbix/zabbix-server-mysql:latest
+    image: zabbix/zabbix-server-pgsql:latest
     hostname: zabbix-server
     ports:
      - "10051:10051"
     volumes:
      - /etc/localtime:/etc/localtime:ro
     env_file:
-     - ./config/db_mysql
+     - ./config/db_pgsql
      - ./config/srv
     secrets:
-     - MYSQL_USER
-     - MYSQL_PASSWORD
-     - MYSQL_ROOT_PASSWORD
+     - POSTGRES_USER
+     - POSTGRES_PASSWORD
     depends_on:
-     - mysql-server
-     - zabbix-java-gateway
-     - zabbix-agent
+     - pgsql-server
     networks:
       net:
         ipv4_address: 12.10.10.3
 
-  zabbix-web-nginx-mysql:
-    image: zabbix/zabbix-web-nginx-mysql:latest
+  zabbix-web-nginx-pgsql:
+    image: zabbix/zabbix-web-nginx-pgsql:latest
     ports:
-     - "80:8080"
+     - "81:8080"
     volumes:
      - /etc/localtime:/etc/localtime:ro
+     - ./config/icon-sprite.svg:/usr/share/zabbix/assets/img/icon-sprite.svg
     env_file:
-     - ./config/db_mysql
+     - ./config/db_pgsql
      - ./config/web
     secrets:
-     - MYSQL_USER
-     - MYSQL_PASSWORD
+     - POSTGRES_USER
+     - POSTGRES_PASSWORD
     depends_on:
-     - mysql-server
+     - pgsql-server
      - zabbix-server
     networks:
       net:
@@ -78,11 +62,9 @@ networks:
         gateway: 12.10.10.1
     
 secrets:
-  MYSQL_USER:
-    file: ./config/MYSQL_USER
-  MYSQL_PASSWORD:
-    file: ./config/MYSQL_PASSWORD
-  MYSQL_ROOT_PASSWORD:
-    file: ./config/MYSQL_ROOT_PASSWORD  
+  POSTGRES_USER:
+    file: ./config/POSTGRES_USER
+  POSTGRES_PASSWORD:
+    file: ./config/POSTGRES_PASSWORD
 
 
