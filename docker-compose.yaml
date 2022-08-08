@@ -10,10 +10,6 @@ services:
         ipv4_address: 12.10.10.5
     command:
      - mysqld
-     - --character-set-server=utf8
-     - --collation-server=utf8_bin
-     - --default-authentication-plugin=mysql_native_password
-     - --log_bin_trust_function_creators=1
     cap_add:
       - SYS_NICE
     volumes:
