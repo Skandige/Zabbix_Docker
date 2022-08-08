@@ -6,7 +6,7 @@ services:
     restart: always
     networks:
       net:
-        ipv4_address: 12.10.10.5
+        ipv4_address: 172.10.10.5
     env_file:
      - ./config/db_pgsql
     secrets:
