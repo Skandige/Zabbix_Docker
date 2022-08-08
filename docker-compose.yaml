@@ -38,7 +38,6 @@ services:
      - "81:8080"
     volumes:
      - /etc/localtime:/etc/localtime:ro
-     - ./config/icon-sprite.svg:/usr/share/zabbix/assets/img/icon-sprite.svg
     env_file:
      - ./config/db_pgsql
      - ./config/web
